@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from sqlite3 import dbapi2 as sqlite
+import os
+import argparse
+import sqlite3
 
 from libturpial.api.models.account import Account
 from libturpial.api.core import Core
+from libturpial.common import get_username_from
 
-import argparse
 
 MAX_STATUS_LENGTH = 140
 
@@ -57,8 +59,43 @@ def send_message(username, message, truncate):
 def show_help():
     print 'say something'
 
+def get_database_connection():
+    exist = os.path.isfile('pythoniso.db')
+
+    connection = sqlite3.connect('pythoniso.db')
+    if not exist:
+        cursor = connection.cursor()
+        cursor.execute('CREATE TABLE messages(id INT)')
+
+    return connection
+
+def fetch_message(message):
+    conn = get_database_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id from messages WHERE id = '%s'" % message.id_)
+    return cursor.fetchone()
+
+def save_message(message):
+    conn = get_database_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO messages VALUES(%s)' % message.id_)
+    conn.commit()
+
 def process_dms(truncate):
-    pass
+    for account in accounts:
+        direct_messages = core.get_column_statuses(account, 'directs', 200)
+        direct_messages.reverse()
+        for message in direct_messages:
+            if not fetch_message(message):
+                # TODO: Define what to post, could be something like:
+                tweet = "%s (via @%s)" % (message.text, message.username)
+                print tweet
+                # send_message(get_username_from(account), message, truncate)
+                save_message(message)
+                break
+            else:
+                continue
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
