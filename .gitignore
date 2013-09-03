@@ -37,3 +37,7 @@ nosetests.xml
 # database
 *.db
 *.sqlite
+
+# vim
+*.swp
+*.swo
