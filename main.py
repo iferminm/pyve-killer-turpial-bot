@@ -36,7 +36,7 @@ def list_accounts():
     for account in accounts:
         print account
 
-def send_message(username, message, truncate=False):
+def send_message(username, message, truncate):
     account = build_account_id(username)
     if account not in accounts:
         print "Your account is not registered yet, follow the steps to do it before you post"
@@ -88,7 +88,7 @@ def process_dms(truncate):
         for message in direct_messages:
             if not fetch_message(message):
                 # TODO: Define what to post, could be something like:
-                tweet = "message_text (via @{username})".format(message_text=message.text, username=message.username)
+                tweet = "{message_text} (via @{username})".format(message_text=message.text, username=message.username)
                 print tweet
                 # send_message(get_username_from(account), message, truncate)
                 save_message(message)
