@@ -16,7 +16,7 @@ core = Core()
 accounts = core.list_accounts()
 
 def build_account_id(username):
-    return '%s-twitter' % username
+    return '{username}-twitter'.format(username=username)
 
 def register_account(username):
     account = build_account_id(username)
