@@ -16,7 +16,7 @@ core = Core()
 accounts = core.list_accounts()
 
 def build_account_id(username):
-    return '%s-twitter' % username
+    return '{username}-twitter'.format(username=username)
 
 def register_account(username):
     account = build_account_id(username)
@@ -30,19 +30,19 @@ def register_account(username):
         cod = raw_input('PIN:')
         new_access.authorize_oauth_access(cod)
         core.register_account(new_access)
-        print "Account %s registered successfully" % new_access.id_
+        print "Account {access_id} registered successfully".format(access_id=new_access.id_)
 
 def list_accounts():
     for account in accounts:
         print account
 
-def send_message(username, message, truncate):
+def send_message(username, message, truncate=False):
     account = build_account_id(username)
     if account not in accounts:
         print "Your account is not registered yet, follow the steps to do it before you post"
         register_account(username)
 
-    if message == '':
+    if not message:
         print 'You must write something to post'
         return
 
@@ -50,7 +50,7 @@ def send_message(username, message, truncate):
         if truncate:
             message = message[:MAX_STATUS_LENGTH]
         else:
-            print "Your message is longer than %i chars and truncate is False" % MAX_STATUS_LENGTH
+            print "Your message is longer than {max_chars} chars and truncate is False".format(max_chars=MAX_STATUS_LENGTH)
             return
 
     core.update_status(account, message)
@@ -72,13 +72,13 @@ def get_database_connection():
 def fetch_message(message):
     conn = get_database_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id from messages WHERE id = '%s'" % message.id_)
+    cursor.execute("SELECT id from messages WHERE id = '{message_id}'".format(message_id=message.id_))
     return cursor.fetchone()
 
 def save_message(message):
     conn = get_database_connection()
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO messages VALUES(%s)' % message.id_)
+    cursor.execute('INSERT INTO messages VALUES({message_id})'.format(message_id=message.id_))
     conn.commit()
 
 def process_dms(truncate):
@@ -88,7 +88,7 @@ def process_dms(truncate):
         for message in direct_messages:
             if not fetch_message(message):
                 # TODO: Define what to post, could be something like:
-                tweet = "%s (via @%s)" % (message.text, message.username)
+                tweet = "message_text (via @{username})".format(message_text=message.text, username=message.username)
                 print tweet
                 # send_message(get_username_from(account), message, truncate)
                 save_message(message)
